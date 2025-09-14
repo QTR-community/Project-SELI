@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Socket.IO Test</title>
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+</head>
+<body style="font-family: Arial; padding: 20px;">
+  <h1>🔌 Socket.IO Test</h1>
+
+  <button onclick="triggerSurvey()">📡 Trigger Survey (Send My Location)</button>
+
+  <h3>📥 Incoming Messages:</h3>
+  <pre id="log" style="background:#f4f4f4; padding:10px; border-radius:8px; height:250px; overflow:auto;"></pre>
+
+  <script>
+    const socket = io("http://localhost:5000", {
+      transports: ["websocket"], // use websocket only for clarity
+    });
+
+    const log = document.getElementById("log");
+
+    function appendLog(message) {
+      log.textContent += message + "\n";
+      log.scrollTop = log.scrollHeight;
+    }
+
+    socket.on("connect", () => appendLog("✅ Connected to socket server"));
+    socket.on("disconnect", () => appendLog("❌ Disconnected from socket server"));
+
+    socket.on("survey_prompt", (data) => {
+      appendLog("📢 Survey Prompt: " + JSON.stringify(data, null, 2));
+    });
+
+    socket.on("survey_update", (data) => {
+      appendLog("📊 Survey Update: " + JSON.stringify(data, null, 2));
+    });
+
+    function triggerSurvey() {
+      if (!navigator.geolocation) {
+        appendLog("⚠️ Geolocation not supported in this browser.");
+        return;
+      }
+
+      appendLog("📍 Requesting location...");
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          const data = {
+            latitude,
+            longitude,
+            user_id: "frontend-test-user", // Replace with actual user ID later
+          };
+          appendLog("📤 Emitting trigger_survey: " + JSON.stringify(data));
+          socket.emit("trigger_survey", data);
+        },
+        (error) => {
+          appendLog("❌ Error getting location: " + error.message);
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 5000,
+          maximumAge: 0
+        }
+      );
+    }
+  </script>
+</body>
+</html>

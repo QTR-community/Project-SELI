@@ -1,0 +1,118 @@
+#Documentation for this API endpoint:
+# POST /api/profiles/
+# Request Body (JSON):
+
+# {
+#     "user_id": "external_user_123",   # Unique ID from Node.js auth system
+#     "street": "123 Main St",      # Street address            
+#     "city": "Lagos",              # City
+#     "state": "Lagos"              # State
+# }
+# Response Body (JSON): (201 Created)       
+'''
+fetch("/api/profiles/", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    "X-CSRFToken": "{{ csrf_token }}"
+  },
+  body: JSON.stringify({
+    user_id: 1,
+    street: "123 Broad St",
+    city: "Lagos",
+    state: "Lagos"
+  })
+})
+.then(res => res.json())
+.then(data => console.log("Profile created:", data));
+'''
+
+
+# PATCH /api/profiles/<user_id>/
+# Request Body (JSON):  
+# {
+#     "user_id": "external_user_123",   # Unique ID from Node.js
+#     "street": "456 New St",      # (Optional) New street address
+#     "city": "Ikeja",             # (Optional) New city
+#     "state": "Lagos"             # (Optional) New state
+# }
+# Response Body (JSON): (200 OK)
+fetch("http://127.0.0.1:8000/api/profile/123/", {
+  method: "PATCH",
+  headers: {
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    street: "15 Bode Thomas Street",
+    city: "Surulere",
+    state: "Lagos",
+  }),
+})
+  .then((res) => res.json())
+  .then((data) => console.log("Updated Profile:", data))
+  .catch((err) => console.error("Error:", err));
+
+'''
+
+# 🔌 Socket.IO + Frontend Quick Guide
+
+## 1 Run Backend
+```bash
+python manage.py runserver
+```
+
+Swagger API docs:  
+➡ **http://127.0.0.1:8000/swagger/** (for testing profile create/update APIs)
+
+---
+
+2. Run Socket.IO Server
+In a second terminal:
+```bash
+python run_socket_server.py
+```
+You should see:
+```
+🔌 Starting Socket.IO server on http://localhost:5000 ...
+```
+
+---
+
+3. Test Sockets (Frontend or Postman)
+
+### Example (Frontend)
+Use the **📍 Get Location** button in the frontend to get current location.  
+It emits:
+```json
+{
+  "latitude": 6.5244,
+  "longitude": 3.3792,
+  "user_id": "abc123"
+}
+```
+to `trigger_survey`.
+
+### Example (Postman)
+You can also test manually using **Socket.IO** in Postman:  
+1. Open Postman → **New → WebSocket Request**  
+2. Connect to:
+```
+ws://localhost:5000/socket.io/?EIO=4&transport=websocket
+```
+3. Send `trigger_survey` event with sample payload above.
+
+---
+
+4 Run Frontend (React)
+```bash
+npm install
+npm start
+```
+
+Opens at **http://localhost:3000/**  
+When you click the **📍 Get Location** button, it should:
+- Capture your current GPS location
+- Send coords to backend
+- Receive survey prompt in console
+
+---
